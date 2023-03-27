@@ -9,13 +9,12 @@ import io.trino.spi.type.VarcharType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
 public class Utils {
+
+    // both FLOAT, DOUBLE returns DOUBLE
     public static Type transferIoTDBType(TSDataType dataType) {
         switch (dataType) {
-            case DOUBLE -> {
+            case DOUBLE, FLOAT -> {
                 return DoubleType.DOUBLE;
-            }
-            case FLOAT -> {
-                return RealType.REAL;
             }
             case INT32 -> {
                 return IntegerType.INTEGER;
@@ -34,11 +33,8 @@ public class Utils {
 
     public static Type transferIoTDBType(String dataType) {
         switch (dataType) {
-            case "DOUBLE" -> {
+            case "DOUBLE", "FLOAT" -> {
                 return DoubleType.DOUBLE;
-            }
-            case "FLOAT" -> {
-                return RealType.REAL;
             }
             case "INT32" -> {
                 return IntegerType.INTEGER;

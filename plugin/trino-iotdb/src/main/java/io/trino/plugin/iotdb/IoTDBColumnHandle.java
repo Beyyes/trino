@@ -19,45 +19,38 @@ public class IoTDBColumnHandle implements ColumnHandle {
     public IoTDBColumnHandle(
             @JsonProperty("columnName") String columnName,
             @JsonProperty("columnType") Type columnType,
-            @JsonProperty("ordinalPosition") int ordinalPosition)
-    {
+            @JsonProperty("ordinalPosition") int ordinalPosition) {
         this.columnName = requireNonNull(columnName, "columnName is null");
         this.columnType = requireNonNull(columnType, "columnType is null");
         this.ordinalPosition = ordinalPosition;
     }
 
     @JsonProperty
-    public String getColumnName()
-    {
+    public String getColumnName() {
         return columnName;
     }
 
     @JsonProperty
-    public Type getColumnType()
-    {
+    public Type getColumnType() {
         return columnType;
     }
 
     @JsonProperty
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return ordinalPosition;
     }
 
-    public ColumnMetadata getColumnMetadata()
-    {
+    public ColumnMetadata getColumnMetadata() {
         return new ColumnMetadata(columnName, columnType);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return columnName.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -70,8 +63,7 @@ public class IoTDBColumnHandle implements ColumnHandle {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return toStringHelper(this)
                 .add("columnName", columnName)
                 .add("columnType", columnType)

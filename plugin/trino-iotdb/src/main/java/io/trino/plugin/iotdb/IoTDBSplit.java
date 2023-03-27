@@ -1,21 +1,26 @@
 package io.trino.plugin.iotdb;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import io.trino.spi.HostAddress;
 import io.trino.spi.connector.ConnectorSplit;
 
 import java.util.List;
 
+import static io.airlift.slice.SizeOf.estimatedSizeOf;
+import static io.airlift.slice.SizeOf.instanceSize;
+import static java.util.Objects.requireNonNull;
+
 public class IoTDBSplit implements ConnectorSplit {
+
+    private static final int INSTANCE_SIZE = instanceSize(IoTDBSplit.class);
 
     private final List<HostAddress> addresses;
 
-    private final String hostAddress;
-
-    public IoTDBSplit(String hostAddress) {
-        this.hostAddress = hostAddress;
-        hostAddress = "127.0.0.1";
-        addresses = ImmutableList.of(HostAddress.fromParts("127.0.0.1", 6667));
+    @JsonCreator
+    public IoTDBSplit(@JsonProperty("addresses") List<HostAddress> addresses) {
+        this.addresses = ImmutableList.copyOf(requireNonNull(addresses, "addresses is null"));
     }
 
     @Override
@@ -24,6 +29,7 @@ public class IoTDBSplit implements ConnectorSplit {
     }
 
     @Override
+    @JsonProperty
     public List<HostAddress> getAddresses() {
         return addresses;
     }
@@ -32,4 +38,10 @@ public class IoTDBSplit implements ConnectorSplit {
     public Object getInfo() {
         return this;
     }
+
+    @Override
+    public long getRetainedSizeInBytes() {
+        return INSTANCE_SIZE + estimatedSizeOf(addresses, HostAddress::getRetainedSizeInBytes);
+    }
+
 }

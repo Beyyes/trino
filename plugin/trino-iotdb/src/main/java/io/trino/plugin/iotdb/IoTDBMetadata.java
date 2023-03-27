@@ -9,6 +9,7 @@ import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.ConnectorTableHandle;
 import io.trino.spi.connector.ConnectorTableMetadata;
 import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.connector.SchemaTablePrefix;
 import io.trino.spi.connector.TableNotFoundException;
 
 import javax.inject.Inject;
@@ -22,6 +23,8 @@ import static java.util.Objects.requireNonNull;
 
 public class IoTDBMetadata implements ConnectorMetadata {
 
+    public static final String IOTDB_DEFAULT_SCHEMA = "root";
+
     private final IoTDBClient iotdbClient;
 
     @Inject
@@ -31,27 +34,48 @@ public class IoTDBMetadata implements ConnectorMetadata {
 
     @Override
     public List<String> listSchemaNames(ConnectorSession session) {
-        return List.of("root");
+        return List.of(IOTDB_DEFAULT_SCHEMA);
     }
 
     public List<String> listSchemaNames() {
-        return List.of("root");
+        return List.of(IOTDB_DEFAULT_SCHEMA);
     }
 
     @Override
     public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table) {
-        return getTableMetadata(((IoTDBTableHandle) table).toSchemaTableName());
+        SchemaTableName schemaTableName = ((IoTDBTableHandle) table).toSchemaTableName();
+
+        if (!listSchemaNames().contains(schemaTableName.getSchemaName())) {
+            return null;
+        }
+
+        List<ColumnMetadata> columns = iotdbClient.getColumnMetadataFromTable(schemaTableName.getSchemaName(),
+                schemaTableName.getTableName());
+        return new ConnectorTableMetadata(schemaTableName, columns);
     }
 
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, Optional<String> optionalSchemaName) {
         Set<String> schemaNames = optionalSchemaName.map(ImmutableSet::of)
-                .orElseGet(() -> ImmutableSet.copyOf(ImmutableSet.of("root")));
+                .orElseGet(() -> ImmutableSet.copyOf(ImmutableSet.of(IOTDB_DEFAULT_SCHEMA)));
 
         return schemaNames.stream()
                 .flatMap(schemaName -> iotdbClient.getTableNamesFromGivenSchema(schemaName).stream().
                         map(tableName -> new SchemaTableName(schemaName, tableName)))
                 .collect(toImmutableList());
+    }
+
+    @Override
+    public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session, SchemaTablePrefix prefix) {
+        requireNonNull(prefix, "prefix is null");
+        ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> columns = ImmutableMap.builder();
+        for (SchemaTableName schemaTable : listTables(session, Optional.empty())) {
+            ConnectorTableMetadata tableMetadata = getTableMetadata(schemaTable);
+            if (tableMetadata != null) {
+                columns.put(schemaTable, tableMetadata.getColumns());
+            }
+        }
+        return columns.buildOrThrow();
     }
 
     @Override
@@ -86,13 +110,28 @@ public class IoTDBMetadata implements ConnectorMetadata {
         return columnHandles.buildOrThrow();
     }
 
-    private ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName) {
-        if (!listSchemaNames().contains(schemaTableName.getSchemaName())) {
+    @Override
+    public ColumnMetadata getColumnMetadata(ConnectorSession session,
+                                            ConnectorTableHandle tableHandle,
+                                            ColumnHandle columnHandle) {
+        return ((IoTDBColumnHandle) columnHandle).getColumnMetadata();
+    }
+
+    public ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTable) {
+        if (!listSchemaNames().contains(schemaTable.getSchemaName())) {
             return null;
         }
 
-        List<ColumnMetadata> columns = iotdbClient.getColumnMetadataFromTable(schemaTableName.getSchemaName(),
-                schemaTableName.getTableName());
-        return new ConnectorTableMetadata(schemaTableName, columns);
+        List<ColumnMetadata> columns = iotdbClient.getColumnMetadataFromTable(schemaTable.getSchemaName(),
+                schemaTable.getTableName());
+        return new ConnectorTableMetadata(schemaTable, columns);
     }
+
+    private List<ColumnMetadata> getColumnMetadataFromTable(SchemaTableName schemaTable) {
+        List<ColumnMetadata> columns = iotdbClient.getColumnMetadataFromTable(schemaTable.getSchemaName(),
+                schemaTable.getTableName());
+        return columns;
+
+    }
+
 }

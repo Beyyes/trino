@@ -1,6 +1,7 @@
 package io.trino.plugin.iotdb;
 
 import io.airlift.slice.Slice;
+import io.airlift.slice.Slices;
 import io.trino.spi.connector.RecordCursor;
 import io.trino.spi.type.BigintType;
 import io.trino.spi.type.DoubleType;
@@ -75,7 +76,7 @@ public class IoTDBRecordCursor implements RecordCursor {
 
     @Override
     public Slice getSlice(int field) {
-        return null;
+        return Slices.utf8Slice(rowRecord.getFields().get(field).getStringValue());
     }
 
     @Override

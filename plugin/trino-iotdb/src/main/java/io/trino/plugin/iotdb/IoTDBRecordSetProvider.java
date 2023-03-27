@@ -11,6 +11,7 @@ import io.trino.spi.connector.RecordSet;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class IoTDBRecordSetProvider implements ConnectorRecordSetProvider {
 
@@ -26,15 +27,11 @@ public class IoTDBRecordSetProvider implements ConnectorRecordSetProvider {
                                   ConnectorSession session,
                                   ConnectorSplit split,
                                   ConnectorTableHandle table,
-                                  List<? extends ColumnHandle> columns)
-    {
-        IoTDBSplit iotdbSplit = (IoTDBSplit) split;
+                                  List<? extends ColumnHandle> columns) {
 
-        ImmutableList.Builder<IoTDBColumnHandle> handles = ImmutableList.builder();
-        for (ColumnHandle handle : columns) {
-            handles.add((IoTDBColumnHandle) handle);
-        }
+        IoTDBSplit ioTDBSplit = (IoTDBSplit) split;
+        List<IoTDBColumnHandle> ioTDBColumnHandles = columns.stream().map(handle -> (IoTDBColumnHandle) handle).toList();
 
-        return new IoTDBRecordSet(ioTDBClient, iotdbSplit, handles.build());
+        return new IoTDBRecordSet(ioTDBClient, ioTDBSplit, ioTDBColumnHandles);
     }
 }

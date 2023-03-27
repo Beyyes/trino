@@ -9,6 +9,7 @@ import org.apache.iotdb.isession.SessionDataSet;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,21 +21,16 @@ public class IoTDBRecordSet implements RecordSet {
 
     private final SessionDataSet sessionDataSet;
 
-    public IoTDBRecordSet(IoTDBClient iotdbClient,
+    public IoTDBRecordSet(IoTDBClient client,
                           IoTDBSplit split,
-                          List<IoTDBColumnHandle> columnHandles)
-    {
-        requireNonNull(iotdbClient, "iotdbClient is null");
-        requireNonNull(split, "split is null");
+                          List<IoTDBColumnHandle> columnHandles) {
 
-        this.columnHandles = requireNonNull(columnHandles, "columnHandles is null");
-        ImmutableList.Builder<Type> types = ImmutableList.builder();
-        for (IoTDBColumnHandle column : columnHandles) {
-            types.add(column.getColumnType());
-        }
-        this.columnTypes = types.build();
+        requireNonNull(client, "IoTDBClient is null");
+        requireNonNull(split, "IoTDBSplit is null");
 
-        sessionDataSet = iotdbClient.query();
+        this.columnHandles = requireNonNull(columnHandles, "IoTDBColumnHandles is null");
+        this.columnTypes = columnHandles.stream().map(IoTDBColumnHandle::getColumnType).toList();
+        this.sessionDataSet = client.query();
     }
 
     @Override
