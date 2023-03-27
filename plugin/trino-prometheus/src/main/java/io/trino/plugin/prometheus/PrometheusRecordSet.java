@@ -31,7 +31,8 @@ public class PrometheusRecordSet
     private final List<Type> columnTypes;
     private final ByteSource byteSource;
 
-    public PrometheusRecordSet(PrometheusClient prometheusClient, PrometheusSplit split, List<PrometheusColumnHandle> columnHandles)
+    public PrometheusRecordSet(PrometheusClient prometheusClient, PrometheusSplit split,
+                               List<PrometheusColumnHandle> columnHandles)
     {
         requireNonNull(prometheusClient, "prometheusClient is null");
         requireNonNull(split, "split is null");

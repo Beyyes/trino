@@ -31,7 +31,7 @@ public class IoTDBConnectorFactory implements ConnectorFactory {
 
     @Override
     public String getName() {
-        return "IoTDB";
+        return "iotdb";
     }
 
     @Override

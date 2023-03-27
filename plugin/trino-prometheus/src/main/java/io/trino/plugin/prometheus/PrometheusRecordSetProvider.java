@@ -40,7 +40,11 @@ public class PrometheusRecordSetProvider
     }
 
     @Override
-    public RecordSet getRecordSet(ConnectorTransactionHandle transaction, ConnectorSession session, ConnectorSplit split, ConnectorTableHandle table, List<? extends ColumnHandle> columns)
+    public RecordSet getRecordSet(ConnectorTransactionHandle transaction,
+                                  ConnectorSession session,
+                                  ConnectorSplit split,
+                                  ConnectorTableHandle table,
+                                  List<? extends ColumnHandle> columns)
     {
         PrometheusSplit prometheusSplit = (PrometheusSplit) split;
 

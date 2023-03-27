@@ -29,8 +29,7 @@ public class IoTDBConnector implements Connector {
             LifeCycleManager lifeCycleManager,
             IoTDBMetadata metadata,
             IoTDBSplitManager splitManager,
-            IoTDBRecordSetProvider recordSetProvider)
-    {
+            IoTDBRecordSetProvider recordSetProvider) {
         this.lifeCycleManager = requireNonNull(lifeCycleManager, "lifeCycleManager is null");
         this.metadata = requireNonNull(metadata, "metadata is null");
         this.splitManager = requireNonNull(splitManager, "splitManager is null");
@@ -38,36 +37,32 @@ public class IoTDBConnector implements Connector {
     }
 
     @Override
-    public ConnectorTransactionHandle beginTransaction(IsolationLevel isolationLevel, boolean readOnly, boolean autoCommit)
-    {
+    public ConnectorTransactionHandle beginTransaction(IsolationLevel isolationLevel,
+                                                       boolean readOnly,
+                                                       boolean autoCommit) {
         return INSTANCE;
     }
 
     @Override
-    public ConnectorMetadata getMetadata(ConnectorSession session, ConnectorTransactionHandle transactionHandle)
-    {
+    public ConnectorMetadata getMetadata(ConnectorSession session, ConnectorTransactionHandle transactionHandle) {
         return metadata;
     }
 
     @Override
-    public ConnectorSplitManager getSplitManager()
-    {
+    public ConnectorSplitManager getSplitManager() {
         return splitManager;
     }
 
     @Override
-    public ConnectorRecordSetProvider getRecordSetProvider()
-    {
+    public ConnectorRecordSetProvider getRecordSetProvider() {
         return recordSetProvider;
     }
 
     @Override
-    public final void shutdown()
-    {
+    public final void shutdown() {
         try {
             lifeCycleManager.stop();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error(e, "Error shutting down connector");
         }
     }

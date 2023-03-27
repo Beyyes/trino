@@ -13,7 +13,39 @@
  */
 package io.trino.plugin.iotdb;
 
+import io.airlift.configuration.Config;
+
+import javax.validation.constraints.NotNull;
+import java.util.Optional;
+
 public class IoTDBConnectorConfig {
     private String user;
     private String password;
+
+    @Config("iotdb.user")
+    public IoTDBConnectorConfig setUser(String user)
+    {
+        this.user = user;
+        return this;
+    }
+
+    @NotNull
+    public Optional<String> getUser()
+    {
+        return Optional.ofNullable(user);
+    }
+
+    @Config("iotdb.password")
+    public IoTDBConnectorConfig setPassword(String password)
+    {
+        this.password = password;
+        return this;
+    }
+
+    @NotNull
+    public Optional<String> getPassword()
+    {
+        return Optional.ofNullable(password);
+    }
+
 }
