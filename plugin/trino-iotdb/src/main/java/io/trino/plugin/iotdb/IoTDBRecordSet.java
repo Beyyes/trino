@@ -15,6 +15,8 @@ import static java.util.Objects.requireNonNull;
 
 public class IoTDBRecordSet implements RecordSet {
 
+    private final IoTDBTableHandle tableHandle;
+
     private final List<IoTDBColumnHandle> columnHandles;
 
     private final List<Type> columnTypes;
@@ -23,14 +25,16 @@ public class IoTDBRecordSet implements RecordSet {
 
     public IoTDBRecordSet(IoTDBClient client,
                           IoTDBSplit split,
+                          IoTDBTableHandle tableHandle,
                           List<IoTDBColumnHandle> columnHandles) {
 
         requireNonNull(client, "IoTDBClient is null");
         requireNonNull(split, "IoTDBSplit is null");
 
+        this.tableHandle = requireNonNull(tableHandle, "IoTDBTableHandle is null");
         this.columnHandles = requireNonNull(columnHandles, "IoTDBColumnHandles is null");
         this.columnTypes = columnHandles.stream().map(IoTDBColumnHandle::getColumnType).toList();
-        this.sessionDataSet = client.query();
+        this.sessionDataSet = client.query(tableHandle, columnHandles);
     }
 
     @Override
@@ -40,6 +44,6 @@ public class IoTDBRecordSet implements RecordSet {
 
     @Override
     public RecordCursor cursor() {
-        return new IoTDBRecordCursor(sessionDataSet);
+        return new IoTDBRecordCursor(sessionDataSet, columnHandles);
     }
 }

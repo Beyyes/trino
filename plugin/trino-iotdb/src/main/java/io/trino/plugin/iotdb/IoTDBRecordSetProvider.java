@@ -30,8 +30,9 @@ public class IoTDBRecordSetProvider implements ConnectorRecordSetProvider {
                                   List<? extends ColumnHandle> columns) {
 
         IoTDBSplit ioTDBSplit = (IoTDBSplit) split;
+        IoTDBTableHandle tableHandle = (IoTDBTableHandle) table;
         List<IoTDBColumnHandle> ioTDBColumnHandles = columns.stream().map(handle -> (IoTDBColumnHandle) handle).toList();
 
-        return new IoTDBRecordSet(ioTDBClient, ioTDBSplit, ioTDBColumnHandles);
+        return new IoTDBRecordSet(ioTDBClient, ioTDBSplit, tableHandle, ioTDBColumnHandles);
     }
 }

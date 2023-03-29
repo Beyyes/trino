@@ -21,31 +21,51 @@ import java.util.Optional;
 public class IoTDBConnectorConfig {
     private String user;
     private String password;
+    private String host;
+    private Integer port;
 
     @Config("iotdb.user")
-    public IoTDBConnectorConfig setUser(String user)
-    {
+    public IoTDBConnectorConfig setUser(String user) {
         this.user = user;
         return this;
     }
 
     @NotNull
-    public Optional<String> getUser()
-    {
+    public Optional<String> getUser() {
         return Optional.ofNullable(user);
     }
 
     @Config("iotdb.password")
-    public IoTDBConnectorConfig setPassword(String password)
-    {
+    public IoTDBConnectorConfig setPassword(String password) {
         this.password = password;
         return this;
     }
 
     @NotNull
-    public Optional<String> getPassword()
-    {
+    public Optional<String> getPassword() {
         return Optional.ofNullable(password);
+    }
+
+    @Config("iotdb.host")
+    public IoTDBConnectorConfig setHost(String host) {
+        this.host = host;
+        return this;
+    }
+
+    @NotNull
+    public Optional<String> getHost() {
+        return Optional.ofNullable(host);
+    }
+
+    @Config("iotdb.port")
+    public IoTDBConnectorConfig setPort(Integer port) {
+        this.port = port;
+        return this;
+    }
+
+    @NotNull
+    public Optional<Integer> getPort() {
+        return Optional.ofNullable(port);
     }
 
 }

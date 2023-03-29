@@ -14,9 +14,11 @@
 package io.trino.plugin.iotdb;
 
 import com.google.common.collect.ImmutableList;
+import io.airlift.log.Logger;
 import io.trino.spi.connector.ColumnHandle;
 import io.trino.spi.connector.ColumnMetadata;
 import io.trino.spi.type.DoubleType;
+import io.trino.spi.type.Type;
 import org.apache.iotdb.isession.SessionDataSet;
 import org.apache.iotdb.rpc.IoTDBConnectionException;
 import org.apache.iotdb.rpc.StatementExecutionException;
@@ -29,11 +31,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static io.trino.spi.type.TimestampWithTimeZoneType.createTimestampWithTimeZoneType;
 import static java.util.Objects.requireNonNull;
 
 public class IoTDBClient {
+    private static final Logger LOGGER = Logger.get(IoTDBClient.class);
 
+    static final String TIME_COLUMN = "Time";
+    static final Type TIMESTAMP_COLUMN_TYPE = createTimestampWithTimeZoneType(3);
     private static String host = "127.0.0.1";
     private static int port = 6667;
     private Session session;
@@ -70,31 +77,45 @@ public class IoTDBClient {
         return tableNames;
     }
 
-    public SessionDataSet query() {
-        try (SessionDataSet dataSet = session.executeQueryStatement("select * from root.**")) {
+    public SessionDataSet query(IoTDBTableHandle tableHandle, List<IoTDBColumnHandle> columnHandles) {
+        String iotdbPath = tableHandle.getSchemaName() + "." + tableHandle.getTableName();
+        String selectColumns = columnHandles.stream()
+                .map(IoTDBColumnHandle::getColumnName)
+                .filter(columnName -> !columnName.equalsIgnoreCase(TIME_COLUMN))
+                .collect(Collectors.joining(","));
+        String queryClause = String.format("SELECT %s FROM %s", selectColumns, iotdbPath);
+        try (SessionDataSet dataSet = session.executeQueryStatement(queryClause)) {
             return dataSet;
         } catch (IoTDBConnectionException | StatementExecutionException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public List<ColumnMetadata> getColumnMetadataFromTable(String schema, String tableName) {
+    public List<ColumnMetadata> getColumnMetadataFromTable(String schemaName, String tableName) {
         List<ColumnMetadata> columnMetadataList = new ArrayList<>();
-        String timeSeries = schema + "." + tableName + ".**";
+        columnMetadataList.add(ColumnMetadata.builder()
+                .setName(TIME_COLUMN)
+                .setType(TIMESTAMP_COLUMN_TYPE)
+                .setNullable(false)
+                .build());
+
+        // the order of show timeseries root.** and select * from root.** is different
+        String timeSeries = schemaName + "." + tableName + ".**";
         try (SessionDataSet dataSet = session.executeQueryStatement("show timeseries " + timeSeries)) {
             while (dataSet.hasNext()) {
                 RowRecord r = dataSet.next();
                 String timeSeriesName = r.getFields().get(0).getStringValue();
                 String[] splits = timeSeriesName.split("\\.");
                 String columnName = splits[splits.length - 1];
-                ColumnMetadata c = ColumnMetadata.builder()
+                ColumnMetadata column = ColumnMetadata.builder()
                         .setName(columnName)
                         .setType(Utils.transferIoTDBType(r.getFields().get(3).getStringValue()))
                         .setNullable(false)
                         .build();
-                columnMetadataList.add(c);
+                columnMetadataList.add(column);
             }
         } catch (IoTDBConnectionException | StatementExecutionException e) {
+
             throw new RuntimeException(e);
         }
         return columnMetadataList;
