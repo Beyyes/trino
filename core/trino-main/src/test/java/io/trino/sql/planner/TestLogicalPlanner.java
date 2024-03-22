@@ -233,7 +233,7 @@ public class TestLogicalPlanner
     @Test
     public void testLikePredicate()
     {
-        assertPlan("SELECT type FROM part WHERE type LIKE 'LARGE PLATED %'",
+        assertPlan("SELECT o1.totalprice+1 FROM orders as o1 join orders as o2 ON (o1.totalprice = o2.totalprice and o1.totalprice>0)",
                 anyTree(
                         tableScan(
                                 tableHandle -> {
@@ -2339,7 +2339,7 @@ public class TestLogicalPlanner
                                                         ImmutableMap.of("val", new ScalarValuePointer(
                                                                 new LogicalIndexPointer(ImmutableSet.of(), true, true, 0, 0),
                                                                 new Symbol("value"))),
-                                                        INTEGER) 
+                                                        INTEGER)
                                                 .rowsPerMatch(WINDOW)
                                                 .frame(ROWS_FROM_CURRENT)
                                                 .pattern(new IrQuantified(new IrLabel("A"), oneOrMore(true)))

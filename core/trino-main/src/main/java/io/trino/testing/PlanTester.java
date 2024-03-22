@@ -836,7 +836,8 @@ public class PlanTester
                 new RuleStatsRecorder());
     }
 
-    public Plan createPlan(Session session, @Language("SQL") String sql, List<PlanOptimizer> optimizers, LogicalPlanner.Stage stage, WarningCollector warningCollector, PlanOptimizersStatsCollector planOptimizersStatsCollector)
+    public Plan createPlan(Session session, @Language("SQL") String sql, List<PlanOptimizer> optimizers, LogicalPlanner.Stage stage,
+                           WarningCollector warningCollector, PlanOptimizersStatsCollector planOptimizersStatsCollector)
     {
         // session must be in a transaction registered with the transaction manager in this query runner
         transactionManager.getTransactionInfo(session.getRequiredTransactionId());
@@ -870,7 +871,8 @@ public class PlanTester
 
         Analysis analysis = analyzer.analyze(preparedQuery.getStatement());
         // make PlanTester always compute plan statistics for test purposes
-        return logicalPlanner.plan(analysis, stage);
+        Plan result = logicalPlanner.plan(analysis, stage);
+        return result;
     }
 
     public SubPlan createAdaptivePlan(Session session, SubPlan subPlan, List<AdaptivePlanOptimizer> optimizers, WarningCollector warningCollector, PlanOptimizersStatsCollector planOptimizersStatsCollector, RuntimeInfoProvider runtimeInfoProvider)

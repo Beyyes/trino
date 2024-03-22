@@ -216,7 +216,8 @@ public class BasePlanTest
                         OPTIMIZED_AND_VALIDATED,
                         NOOP,
                         createPlanOptimizersStatsCollector());
-                PlanAssert.assertPlan(transactionSession, planTester.getPlannerContext().getMetadata(), planTester.getPlannerContext().getFunctionManager(), planTester.getStatsCalculator(), actualPlan, pattern);
+                PlanAssert.assertPlan(transactionSession, planTester.getPlannerContext().getMetadata(),
+                        planTester.getPlannerContext().getFunctionManager(), planTester.getStatsCalculator(), actualPlan, pattern);
                 return null;
             });
         }
